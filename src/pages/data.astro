@@ -16,6 +16,10 @@
     <button id='media-devices'>
       Media Devices
     </button>
+
+    <button id='clipboard'>
+      Clipboard
+    </button>
 	</body>
 </html>
 
@@ -35,6 +39,7 @@
 
   const pre = window.document.querySelector('pre') as HTMLPreElement
   const mediaDevicesButton = window.document.querySelector('#media-devices') as HTMLButtonElement
+  const clipboardButton = window.document.querySelector('#clipboard') as HTMLButtonElement
 
   const updateContent = (path: [keyof ClientData, keyof ExtendedTypes], value: any) => {
     const [section, key] = path
@@ -50,11 +55,11 @@
     try {
       await window.navigator.mediaDevices.getUserMedia({ audio: true, video: true })
 
-      const devices = await window.navigator.mediaDevices.enumerateDevices()
+      const mediaDevices = await window.navigator.mediaDevices.enumerateDevices()
 
-      const audioinput = devices.filter(device => device.kind === 'audioinput')
-      const audiooutput = devices.filter(device => device.kind === 'audiooutput')
-      const videoinput = devices.filter(device => device.kind === 'videoinput')
+      const audioinput = mediaDevices.filter(device => device.kind === 'audioinput')
+      const audiooutput = mediaDevices.filter(device => device.kind === 'audiooutput')
+      const videoinput = mediaDevices.filter(device => device.kind === 'videoinput')
 
       return {
         audioinput: audioinput.map(device => device.label),
@@ -69,12 +74,35 @@
     }
   }
 
-  const handleMediaDevices = async () => {
-    const devices = await getMediaDevices(mediaDevicesButton)
+  const getClipboard = async (button: HTMLButtonElement) => {
+    button.disabled = true
 
-    if (devices)
-      updateContent(['navigator', 'mediaDevices'], devices)
+    try {
+      const clipboard = await window.navigator.clipboard.readText()
+      
+      return clipboard
+    } catch (error) {
+      console.error('Error accessing clipboard:', error)
+    } finally {
+      button.removeEventListener('click', async () => await getClipboard(button))
+      button.disabled = false
+    }
+  }
+
+  const handleMediaDevices = async () => {
+    const mediaDevices = await getMediaDevices(mediaDevicesButton)
+
+    if (mediaDevices)
+      updateContent(['navigator', 'mediaDevices'], mediaDevices)
+  }
+
+  const handleClipboard = async () => {
+    const clipboard = await getClipboard(clipboardButton)
+
+    if (clipboard)
+      updateContent(['navigator', 'clipboard'], clipboard)
   }
 
   mediaDevicesButton.addEventListener('click', handleMediaDevices)
+  clipboardButton.addEventListener('click', handleClipboard)
 </script>
