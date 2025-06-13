@@ -8,9 +8,96 @@
 		<link rel='icon' type='image/svg+xml' href='/favicon.svg' />
 		<meta name='viewport' content='width=device-width' />
 		<meta name='generator' content={Astro.generator} />
-		<title>Astro</title>
+		<title>Ping</title>
 	</head>
 	<body>
-		<h1>Astro</h1>
+		<pre></pre>
 	</body>
 </html>
+
+<style>
+  body {
+    background-color: black;
+    color: white;
+  }
+</style>
+
+<script>
+  const pre = document.querySelector('pre') as HTMLPreElement
+
+  const clientInfo = {
+    navigator: {
+      appVersion: navigator.appVersion,
+      clipboard: 'Pending clipboard access',
+      connection: {
+        downlink: (navigator as any).connection?.downlink,
+        downlinkMax: (navigator as any).connection?.downlinkMax,
+        effectiveType: (navigator as any).connection?.effectiveType,
+        rtt: (navigator as any).connection?.rtt,
+        saveData: (navigator as any).connection?.saveData,
+        type: (navigator as any).connection?.type
+      },
+      cookieEnabled: navigator.cookieEnabled,
+      deviceMemory: (navigator as any).deviceMemory,
+      devicePosture: {
+        type: (navigator as any).devicePosture?.type,
+      },
+      geolocation: 'Pending geolocation access',
+      hardwareConcurrency: navigator.hardwareConcurrency,
+      language: navigator.language,
+      maxTouchPoints: navigator.maxTouchPoints,
+      mediaDevices: '',
+      onLine: navigator.onLine,
+      oscpu: (navigator as any).oscpu,
+      pdfViewerEnabled: navigator.pdfViewerEnabled,
+      platform: navigator.platform,
+      product: navigator.product,
+      storage: {
+        estimate: await navigator.storage.estimate(),
+        persisted: await navigator.storage.persisted()
+      },
+      userActivation: {
+        hasBeenActive: navigator.userActivation.hasBeenActive,
+        isActive: navigator.userActivation.isActive
+      },
+      userAgent: navigator.userAgent,
+      vendor: navigator.vendor,
+      webdriver: navigator.webdriver
+    }
+  }
+
+  async function getGeolocationInfo() {
+    return new Promise(resolve => {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          clientInfo.navigator.geolocation = position.coords.toJSON()
+          resolve(clientInfo)
+        },
+        () => {
+          clientInfo.navigator.geolocation = 'Geolocation access denied'
+          resolve(clientInfo)
+        }
+      )
+    })
+  }
+
+  async function getClipboardText() {
+    try {
+      return await navigator.clipboard.readText()
+    } catch (error) {
+      return 'Clipboard access denied'
+    }
+  }
+
+  pre.textContent = JSON.stringify(clientInfo, null, 2)
+
+  getGeolocationInfo().then(info => pre.textContent = JSON.stringify(info, null, 2))
+  getClipboardText().then(text => {
+    clientInfo.navigator.clipboard = text
+    pre.textContent = JSON.stringify(clientInfo, null, 2)
+  })
+
+  console.log(navigator)
+
+  // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/keyboard
+</script>
