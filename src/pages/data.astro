@@ -1,0 +1,80 @@
+---
+
+---
+
+<html lang='en'>
+	<head>
+		<meta charset='utf-8' />
+		<link rel='icon' type='image/svg+xml' href='/favicon.svg' />
+		<meta name='viewport' content='width=device-width' />
+		<meta name='generator' content={Astro.generator} />
+		<title>Ping</title>
+	</head>
+	<body>
+		<pre></pre>
+
+    <button id='media-devices'>
+      Media Devices
+    </button>
+	</body>
+</html>
+
+<style>
+  body {
+    background-color: black;
+    color: white;
+  }
+</style>
+
+<script>
+  import type { ClientData, ExtendedTypes } from '../types/client-data'
+
+  const clientData: ClientData = {
+    navigator: {}
+  }
+
+  const pre = window.document.querySelector('pre') as HTMLPreElement
+  const mediaDevicesButton = window.document.querySelector('#media-devices') as HTMLButtonElement
+
+  const updateContent = (path: [keyof ClientData, keyof ExtendedTypes], value: any) => {
+    const [section, key] = path
+
+    clientData[section][key] = value
+
+    pre.textContent = JSON.stringify(clientData, null, 2)
+  }
+
+  const getMediaDevices = async (button: HTMLButtonElement) => {
+    button.disabled = true
+
+    try {
+      await window.navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+
+      const devices = await window.navigator.mediaDevices.enumerateDevices()
+
+      const audioinput = devices.filter(device => device.kind === 'audioinput')
+      const audiooutput = devices.filter(device => device.kind === 'audiooutput')
+      const videoinput = devices.filter(device => device.kind === 'videoinput')
+
+      return {
+        audioinput: audioinput.map(device => device.label),
+        audiooutput: audiooutput.map(device => device.label),
+        videoinput: videoinput.map(device => device.label)
+      }
+    } catch (error) {
+      console.error('Error accessing media devices:', error)
+    } finally {
+      button.removeEventListener('click', async () => await getMediaDevices(button))
+      button.disabled = false
+    }
+  }
+
+  const handleMediaDevices = async () => {
+    const devices = await getMediaDevices(mediaDevicesButton)
+
+    if (devices)
+      updateContent(['navigator', 'mediaDevices'], devices)
+  }
+
+  mediaDevicesButton.addEventListener('click', handleMediaDevices)
+</script>
