@@ -49,11 +49,12 @@
     pre.textContent = JSON.stringify(clientData, null, 2)
   }
 
-  const getMediaDevices = async (button: HTMLButtonElement) => {
+  const getMediaDevices = async (button: HTMLButtonElement, access?: boolean) => {
     button.disabled = true
 
     try {
-      await window.navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+      if (!access)
+        await window.navigator.mediaDevices.getUserMedia({ audio: true, video: true })
 
       const mediaDevices = await window.navigator.mediaDevices.enumerateDevices()
 
