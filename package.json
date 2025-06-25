@@ -10,6 +10,6 @@
   },
   "dependencies": {
     "astro": "^5.9.2",
-    "glimpser": "^1.0.0"
+    "glimpser": "1.0.1"
   }
 }
